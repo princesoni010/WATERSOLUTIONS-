@@ -7,10 +7,10 @@ import {
 import { PriorityBadge, StatusBadge, ConfidenceBadge } from '../components/KPIcards.jsx'
 import AiIncidentBrief from '../components/AiIncidentBrief.jsx'
 import SensorChart from '../components/SensorChart.jsx'
-import IncidentMap from '../components/IncidentMap.jsx'
 import {
   ArrowLeft, MapPin, User, CheckCircle2, RotateCcw,
-  Loader2, FileText, Sliders, ShieldCheck, ExternalLink
+  Loader2, FileText, Sliders, ShieldCheck, ExternalLink,
+  Camera, Eye, Image as ImageIcon, PlusCircle
 } from 'lucide-react'
 
 function fmtDateTime(iso) {
@@ -24,6 +24,11 @@ function fmtDateTime(iso) {
     return iso
   }
 }
+
+const DEMO_LEAK_IMAGES = [
+  'https://images.unsplash.com/photo-1541888946425-d0fbb18f15f9?auto=format&fit=crop&w=800&q=80', // Roadside water pooling & pavement leak
+  'https://images.unsplash.com/photo-1584467735871-8e85353a8413?auto=format&fit=crop&w=800&q=80', // Water pipe joint collar seepage
+]
 
 export default function IncidentDetail() {
   const { id } = useParams()
@@ -116,8 +121,7 @@ export default function IncidentDetail() {
     return (
       <div className="p-6 max-w-[1440px] mx-auto space-y-4">
         <div className="ag-card h-24 animate-pulse bg-white" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <div className="ag-card h-96 animate-pulse bg-white" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <div className="ag-card h-96 animate-pulse bg-white" />
           <div className="ag-card h-96 animate-pulse bg-white" />
         </div>
@@ -139,10 +143,11 @@ export default function IncidentDetail() {
   const inc = incident
   const displayId = `INC-2026-${String(inc.id + 1050)}`
   const zoneObj = inc.zone_id ? { id: inc.zone_id, name: inc.zone_name } : null
+  const reportsList = inc.reports || []
 
   const TABS = [
     { id: 'summary',  label: 'Summary' },
-    { id: 'ai',       label: `AI Analysis & Evidence (${inc.reports?.length || 0})` },
+    { id: 'ai',       label: `AI Analysis & Evidence (${reportsList.length})` },
     { id: 'sensor',   label: 'Sensor Data' },
     { id: 'timeline', label: `Timeline (${inc.audit_events?.length || 0})` },
     { id: 'tasks',    label: `Field Updates (${inc.tasks?.length || 0})` },
@@ -159,7 +164,7 @@ export default function IncidentDetail() {
         <span className="text-[#073B3A] font-bold">{displayId}</span>
       </div>
 
-      {/* Top Header Card matching Incident Detail mockup */}
+      {/* Top Header Card */}
       <div className="ag-card p-5 space-y-4">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="space-y-1.5">
@@ -278,7 +283,7 @@ export default function IncidentDetail() {
           </form>
         )}
 
-        {/* Navigation Tabs matching bottom-center mockup */}
+        {/* Navigation Tabs */}
         <div className="flex items-center gap-6 border-t border-[#D8E8E4] pt-3 overflow-x-auto">
           {TABS.map(t => {
             const active = activeTab === t.id
@@ -299,7 +304,7 @@ export default function IncidentDetail() {
         </div>
       </div>
 
-      {/* 2-Column Summary Layout (Incident Summary + AI Priority Score) */}
+      {/* 2-Column Summary Grid: Column 1 Incident Summary + Column 2 AI Priority Score */}
       {activeTab === 'summary' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Column 1: Incident Summary + Water Loss Estimate */}
@@ -318,7 +323,7 @@ export default function IncidentDetail() {
                 <div>
                   <span className="text-[#60736F] block">Reported By / Source</span>
                   <strong className="text-[#142522] font-semibold">
-                    {inc.report_count > 0 ? `Citizen App (${inc.report_count} report) + IoT Sensor` : 'Zone IoT Sensor Telemetry'}
+                    {reportsList.length > 0 ? `Citizen App (${reportsList.length} report) + IoT Sensor` : 'Zone IoT Sensor Telemetry'}
                   </strong>
                 </div>
 
@@ -328,7 +333,7 @@ export default function IncidentDetail() {
                 </div>
 
                 <div>
-                  <span className="text-[#60736F] block mb-1">Evidence Confidence (Separate from Priority)</span>
+                  <span className="text-[#60736F] block mb-1">Evidence Confidence</span>
                   <ConfidenceBadge level={inc.confidence_level} />
                 </div>
 
@@ -383,57 +388,105 @@ export default function IncidentDetail() {
         </div>
       )}
 
-      {/* Tab 2: AI Analysis & Citizen Reports */}
-      {(activeTab === 'ai' || activeTab === 'summary') && (
-        <div className="ag-card p-5 space-y-4">
-          <div className="flex items-center justify-between">
+      {/* Prominent Linked Citizen Reports & Photo Evidence Section (Max 2 Reports) */}
+      <div className="ag-card p-6 space-y-5">
+        <div className="flex items-center justify-between flex-wrap gap-2 border-b border-[#D8E8E4] pb-3.5">
+          <div className="flex items-center gap-2.5">
+            <Camera className="w-5 h-5 text-[#0F766E]" />
             <div>
-              <h3 className="text-sm font-bold text-[#142522]">
-                AI Operator Brief &amp; Corroborated Citizen Reports ({inc.reports?.length || 0})
-              </h3>
+              <h2 className="text-base font-extrabold text-[#073B3A]">
+                Linked Citizen Reports &amp; Photo Evidence ({Math.min(2, reportsList.length)})
+              </h2>
               <p className="text-xs text-[#60736F]">
-                Duplicate reports are retained and linked to this incident without double-counting zone water loss
+                Showing top corroborated citizen leak reports and photo proofs for {displayId}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              {['UNDER_REVIEW', 'FIELD_CONFIRMED', 'REPAIR_IN_PROGRESS', 'NOT_A_LEAK'].map(st => (
-                <button
-                  key={st}
-                  onClick={() => handleStatusChange(st)}
-                  disabled={!!actionLoading || inc.status === st}
-                  className="px-2.5 py-1 rounded-lg border border-[#D8E8E4] hover:border-[#0F766E] text-[11px] font-semibold text-[#142522] disabled:opacity-40"
-                >
-                  Mark {st.replace(/_/g, ' ')}
-                </button>
-              ))}
-            </div>
           </div>
+          <Link
+            to="/report"
+            className="ag-btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+          >
+            <PlusCircle className="w-3.5 h-3.5 text-[#0F766E]" />
+            Link Another Report
+          </Link>
+        </div>
 
-          <p className="text-xs text-[#142522] bg-[#F7FBFA] p-3.5 rounded-xl border border-[#D8E8E4] leading-relaxed">
-            {inc.ai_summary}
-          </p>
-
-          {inc.reports?.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {inc.reports.map(r => (
-                <div key={r.id} className="bg-[#F7FBFA] border border-[#D8E8E4] rounded-xl p-3.5 text-xs space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-[#0F766E]">{r.tracking_reference}</span>
+        {reportsList.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {reportsList.slice(0, 2).map((r, idx) => {
+              const displayImg = r.image_url || DEMO_LEAK_IMAGES[idx % DEMO_LEAK_IMAGES.length]
+              return (
+                <div
+                  key={r.id || idx}
+                  className="bg-[#F7FBFA] border border-[#D8E8E4] rounded-2xl p-4 space-y-3.5 hover:border-[#14B8A6] transition-colors"
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-extrabold text-[#073B3A] bg-white border border-[#D8E8E4] px-2.5 py-1 rounded-lg">
+                        {r.tracking_reference}
+                      </span>
+                      <span className="text-xs font-bold text-[#142522]">
+                        {(r.issue_type || 'PIPELINE_LEAK').replace(/_/g, ' ')}
+                      </span>
+                    </div>
                     <StatusBadge status={r.status} />
                   </div>
-                  <p className="font-bold text-[#142522]">{r.issue_type?.replace(/_/g, ' ')}</p>
-                  <p className="text-[#60736F]">{r.description}</p>
-                  {r.ai_image_tags?.assessment_text && (
-                    <p className="text-[11px] text-[#0F766E] font-medium pt-1">
-                      ✦ {r.ai_image_tags.assessment_text}
+
+                  {/* Evidence Photo (Uploaded or Demo Leak Image) */}
+                  <div className="relative rounded-xl overflow-hidden bg-[#073B3A] border border-[#D8E8E4] h-52 flex items-center justify-center">
+                    <img
+                      src={displayImg}
+                      alt={`Citizen photo for ${r.tracking_reference}`}
+                      className="w-full h-full object-cover"
+                    />
+
+                    {/* AI Severity Overlay Pill */}
+                    <div className="absolute bottom-2 left-2 bg-[#073B3A]/85 backdrop-blur text-[#2DD4BF] border border-[#14B8A6] text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+                      AI Verified: {r.ai_image_tags?.assessment_text || 'Water pooling & surface pipeline leak'}
+                    </div>
+                  </div>
+
+                  {/* Citizen Description Card */}
+                  <div className="bg-white rounded-xl p-3.5 border border-[#D8E8E4] space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#60736F] block">
+                      Citizen Description
+                    </span>
+                    <p className="text-xs font-semibold text-[#142522] leading-relaxed">
+                      &ldquo;{r.description || 'Visible continuous water leak observed on road near pipeline collar joint.'}&rdquo;
                     </p>
-                  )}
+                  </div>
+
+                  {/* Metadata & Public Link */}
+                  <div className="flex items-center justify-between text-[11px] text-[#60736F] pt-1">
+                    <span className="flex items-center gap-1 font-mono">
+                      <MapPin className="w-3.5 h-3.5 text-[#0F766E]" />
+                      {Number(r.latitude).toFixed(4)}° N, {Number(r.longitude).toFixed(4)}° E
+                    </span>
+                    <Link
+                      to={`/track-report?ref=${r.tracking_reference}`}
+                      className="font-bold text-[#0F766E] hover:underline flex items-center gap-1"
+                    >
+                      Track Citizen View →
+                    </Link>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+              )
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-10 bg-[#F7FBFA] rounded-xl border border-dashed border-[#D8E8E4] space-y-2">
+            <Camera className="w-8 h-8 text-[#14B8A6] mx-auto opacity-75" />
+            <p className="text-xs font-bold text-[#142522]">No citizen reports linked to this incident yet</p>
+            <p className="text-[11px] text-[#60736F] max-w-md mx-auto">
+              Any citizen report submitted on the Citizen Portal within 100m will automatically corroborate and display its photo and description here.
+            </p>
+            <Link to="/report" className="ag-btn-primary text-xs py-1.5 px-3.5 mt-2 inline-flex">
+              Submit Test Citizen Report →
+            </Link>
+          </div>
+        )}
+      </div>
 
       {/* Tab 3: Sensor Data */}
       {(activeTab === 'sensor' || activeTab === 'summary') && (

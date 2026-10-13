@@ -1,5 +1,8 @@
-import { useState, useRef } from 'react'
-import { MapPin, Upload, Send, CheckCircle2, AlertCircle, Loader2, ShieldAlert, Copy, Check } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import {
+  MapPin, Upload, Camera, Send, CheckCircle2,
+  AlertCircle, Loader2, ShieldAlert, Copy, Check, X
+} from 'lucide-react'
 import { submitReport } from '../api/client.js'
 
 const ISSUE_TYPES = [
@@ -29,16 +32,81 @@ export default function CitizenReportForm({ onSubmitted, externalPin, onPinChang
   })
   const [imageFile, setImageFile] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
+  const [cameraOpen, setCameraOpen] = useState(false)
+  const [cameraError, setCameraError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [locLoading, setLocLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState(null)
-  const fileRef = useRef()
 
-  // Sync when user clicks on the interactive map
+  const fileRef = useRef(null)
+  const cameraInputRef = useRef(null)
+  const videoRef = useRef(null)
+  const streamRef = useRef(null)
+
+  // Sync when user clicks on an external map
   if (externalPin?.lat && externalPin?.lng && (form.latitude !== externalPin.lat || form.longitude !== externalPin.lng)) {
     setForm(f => ({ ...f, latitude: externalPin.lat, longitude: externalPin.lng }))
+  }
+
+  const stopCameraStream = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current = null
+    }
+    setCameraOpen(false)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [])
+
+  const openCamera = async () => {
+    setCameraError(null)
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      cameraInputRef.current?.click()
+      return
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      })
+      streamRef.current = stream
+      setCameraOpen(true)
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          videoRef.current.play().catch(() => {})
+        }
+      }, 50)
+    } catch {
+      setCameraError('Camera access unavailable or blocked. Opening file camera picker instead.')
+      cameraInputRef.current?.click()
+    }
+  }
+
+  const capturePhotoFromVideo = () => {
+    const video = videoRef.current
+    if (!video) return
+    const canvas = document.createElement('canvas')
+    canvas.width = video.videoWidth || 640
+    canvas.height = video.videoHeight || 480
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+    canvas.toBlob((blob) => {
+      if (!blob) return
+      const capturedFile = new File([blob], `leak_capture_${Date.now()}.jpg`, { type: 'image/jpeg' })
+      setImageFile(capturedFile)
+      setImagePreview(URL.createObjectURL(capturedFile))
+      stopCameraStream()
+    }, 'image/jpeg', 0.92)
   }
 
   const handleChange = (e) => {
@@ -53,7 +121,7 @@ export default function CitizenReportForm({ onSubmitted, externalPin, onPinChang
   }
 
   const handleImage = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files?.[0]
     if (!file) return
     setImageFile(file)
     setImagePreview(URL.createObjectURL(file))
@@ -68,11 +136,10 @@ export default function CitizenReportForm({ onSubmitted, externalPin, onPinChang
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setForm(f => ({
-          ...f,
-          latitude: pos.coords.latitude.toFixed(6),
-          longitude: pos.coords.longitude.toFixed(6),
-        }))
+        const lat = pos.coords.latitude.toFixed(6)
+        const lng = pos.coords.longitude.toFixed(6)
+        setForm(f => ({ ...f, latitude: lat, longitude: lng }))
+        onPinChange?.({ lat, lng })
         setLocLoading(false)
       },
       () => {
@@ -90,6 +157,7 @@ export default function CitizenReportForm({ onSubmitted, externalPin, onPinChang
     if (!form.issue_type) return setError('Please select a leak issue type.')
     if (!form.latitude || !form.longitude) return setError('Enter a valid location or choose a preset pin.')
 
+    stopCameraStream()
     setLoading(true)
     try {
       const fd = new FormData()
@@ -166,7 +234,7 @@ export default function CitizenReportForm({ onSubmitted, externalPin, onPinChang
 
         {result.linked_incident_code && (
           <p className="text-xs text-[#0F766E] font-semibold bg-white/80 py-2 px-3 rounded-lg border border-[#99F6E4] inline-block">
-            ✓ Automatically corroborated with active incident <strong>{result.linked_incident_code}</strong> in this zone!
+            ✓ Automatically linked with operational case <strong>{result.linked_incident_code}</strong>!
           </p>
         )}
 
@@ -315,10 +383,10 @@ export default function CitizenReportForm({ onSubmitted, externalPin, onPinChang
         </div>
       </div>
 
-      {/* 3. Add Details & Photo Evidence */}
+      {/* 3. Add Details & Photo Evidence (Both Upload & Click Photo) */}
       <div>
         <label className="block text-xs font-bold text-[#142522] uppercase tracking-wider mb-1.5">
-          3. Add Details &amp; Photo
+          3. Add Details &amp; Photo Evidence
         </label>
         <textarea
           name="description"
@@ -329,34 +397,116 @@ export default function CitizenReportForm({ onSubmitted, externalPin, onPinChang
           className="ag-input w-full resize-none mb-3"
         />
 
-        <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} className="hidden" />
-        <div className="flex items-center gap-3">
+        {/* Hidden file inputs for Upload and fallback Camera Capture */}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImage}
+          className="hidden"
+        />
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleImage}
+          className="hidden"
+        />
+
+        {/* Side-by-side Upload Photo & Click Photo (Camera) Buttons */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             type="button"
-            onClick={() => fileRef.current.click()}
-            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 border-2 border-dashed border-[#99F6E4] hover:border-[#0F766E] bg-[#F0FDFA]/60 text-[#0F766E] rounded-xl text-xs font-semibold transition-colors"
+            onClick={() => fileRef.current?.click()}
+            className="flex items-center justify-center gap-2 py-3 px-4 border-2 border-dashed border-[#99F6E4] hover:border-[#0F766E] bg-[#F0FDFA]/60 text-[#0F766E] rounded-xl text-xs font-bold transition-colors"
           >
             <Upload className="w-4 h-4" />
-            {imageFile ? `Selected: ${imageFile.name}` : 'Upload Leak Photo (JPG, PNG, WebP — max 5 MB)'}
+            Upload Photo from Device
           </button>
-          {imagePreview && (
+
+          <button
+            type="button"
+            onClick={cameraOpen ? stopCameraStream : openCamera}
+            className="flex items-center justify-center gap-2 py-3 px-4 border-2 border-[#0F766E] bg-[#0F766E]/10 hover:bg-[#0F766E] text-[#073B3A] hover:text-white rounded-xl text-xs font-bold transition-colors"
+          >
+            <Camera className="w-4 h-4" />
+            {cameraOpen ? 'Close Camera' : 'Click Photo (Open Camera)'}
+          </button>
+        </div>
+
+        {cameraError && (
+          <p className="text-[11px] text-[#B45309] mt-1.5">{cameraError}</p>
+        )}
+
+        {/* Live Camera Viewfinder Modal / Box */}
+        {cameraOpen && (
+          <div className="mt-3 bg-[#073B3A] rounded-xl p-3 space-y-3 border border-[#14B8A6]">
+            <div className="flex items-center justify-between text-white text-xs">
+              <span className="font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#DC2626] animate-pulse" />
+                Live Camera Preview
+              </span>
+              <button
+                type="button"
+                onClick={stopCameraStream}
+                className="text-slate-300 hover:text-white p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="relative rounded-lg overflow-hidden bg-black aspect-video max-h-64 mx-auto flex items-center justify-center">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={capturePhotoFromVideo}
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#14B8A6] hover:bg-[#0F766E] text-[#073B3A] hover:text-white font-extrabold text-xs shadow-md transition-all"
+              >
+                <Camera className="w-4 h-4" />
+                Capture Photo Now
+              </button>
+              <button
+                type="button"
+                onClick={stopCameraStream}
+                className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Attached / Captured Image Preview */}
+        {imagePreview && (
+          <div className="mt-3 flex items-center justify-between gap-3 bg-[#F7FBFA] p-3 rounded-xl border border-[#D8E8E4]">
+            <div className="flex items-center gap-3">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="h-16 w-24 rounded-lg object-cover border border-[#D8E8E4]"
+              />
+              <div className="text-xs text-[#60736F]">
+                <p className="font-bold text-[#142522]">{imageFile?.name || 'Photo Attached'}</p>
+                <p>Ready for AI pre-screening — field verification required.</p>
+              </div>
+            </div>
             <button
               type="button"
               onClick={() => { setImageFile(null); setImagePreview(null) }}
-              className="text-xs text-[#DC2626] font-semibold hover:underline"
+              className="text-xs text-[#DC2626] font-bold hover:underline px-2"
             >
               Remove
             </button>
-          )}
-        </div>
-
-        {imagePreview && (
-          <div className="mt-2.5 flex items-center gap-3 bg-[#F7FBFA] p-2.5 rounded-xl border border-[#D8E8E4]">
-            <img src={imagePreview} alt="Preview" className="h-16 w-24 rounded-lg object-cover border border-[#D8E8E4]" />
-            <div className="text-xs text-[#60736F]">
-              <p className="font-bold text-[#142522]">Photo attached for AI pre-screening</p>
-              <p>AI assessment is advisory — field verification required.</p>
-            </div>
           </div>
         )}
       </div>
