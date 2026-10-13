@@ -1,0 +1,68 @@
+[
+  {
+    "id": "normal",
+    "name": "Normal Operation",
+    "default_zone": "ZONE-A",
+    "description": "Flow and pressure remain near expected baseline with minor natural variation.",
+    "expected_effect": "No active incident created; sensor status remains NORMAL.",
+    "flow_multiplier": 1.0,
+    "pressure_multiplier": 1.0,
+    "readings_count": 3,
+    "quality_flag": "GOOD"
+  },
+  {
+    "id": "gradual_leak",
+    "name": "Gradual Pipeline Leak",
+    "default_zone": "ZONE-B",
+    "description": "Sustained +30% flow increase and -23% pressure drop across 3 consecutive readings.",
+    "expected_effect": "Creates or updates a High-Risk Suspected Incident requiring field verification.",
+    "flow_multiplier": 1.30,
+    "pressure_multiplier": 0.766,
+    "readings_count": 3,
+    "quality_flag": "GOOD"
+  },
+  {
+    "id": "burst",
+    "name": "Sudden Pipe Burst",
+    "default_zone": "ZONE-D",
+    "description": "Major arterial surge (+55% flow) and severe pressure drop (-34% pressure) for 3 consecutive readings.",
+    "expected_effect": "Creates or escalates a Critical Priority Suspected Incident with high projected water loss.",
+    "flow_multiplier": 1.55,
+    "pressure_multiplier": 0.66,
+    "readings_count": 3,
+    "quality_flag": "GOOD"
+  },
+  {
+    "id": "demand_spike",
+    "name": "Temporary Demand Spike",
+    "default_zone": "ZONE-C",
+    "description": "Short-lived flow increase (+26%) for 1 reading without sustained pressure loss, returning to baseline.",
+    "expected_effect": "Enters MONITOR state only; prevents false-alarm incident creation.",
+    "flow_multiplier": 1.26,
+    "pressure_multiplier": 0.93,
+    "readings_count": 3,
+    "quality_flag": "GOOD"
+  },
+  {
+    "id": "sensor_offline",
+    "name": "Sensor Offline / Stale Data",
+    "default_zone": "ZONE-E",
+    "description": "Telemetry feed stops or reports STALE/MISSING quality flag.",
+    "expected_effect": "Marks sensor as STALE/OFFLINE with blue/grey indicator; never shown as normal.",
+    "flow_multiplier": null,
+    "pressure_multiplier": null,
+    "readings_count": 1,
+    "quality_flag": "STALE"
+  },
+  {
+    "id": "post_repair_recovery",
+    "name": "Post-Repair Recovery",
+    "default_zone": "ZONE-B",
+    "description": "5 consecutive intervals returning flow and pressure smoothly back to baseline after field repair.",
+    "expected_effect": "Marks zone anomaly as RECOVERED and recommends operator verification of resolution.",
+    "flow_multiplier": 1.01,
+    "pressure_multiplier": 0.99,
+    "readings_count": 5,
+    "quality_flag": "GOOD"
+  }
+]

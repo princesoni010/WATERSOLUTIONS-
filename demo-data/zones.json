@@ -1,0 +1,52 @@
+[
+  {
+    "id": "ZONE-A",
+    "name": "Zone A — Civil Lines & Secretariat",
+    "center_lat": 21.2514,
+    "center_lng": 81.6296,
+    "expected_flow_lpm": 90.0,
+    "expected_pressure_psi": 58.0,
+    "impact_category": "GOVERNMENT_CIVIC",
+    "description": "Normal operation baseline zone covering municipal offices and residential blocks."
+  },
+  {
+    "id": "ZONE-B",
+    "name": "Zone B — Pandri Bus Stand & Market",
+    "center_lat": 21.2568,
+    "center_lng": 81.6412,
+    "expected_flow_lpm": 100.0,
+    "expected_pressure_psi": 60.0,
+    "impact_category": "HIGH_PUBLIC_IMPACT",
+    "description": "High-traffic transit hub, central school corridor, and commercial distribution main."
+  },
+  {
+    "id": "ZONE-C",
+    "name": "Zone C — Shankar Nagar Residential",
+    "center_lat": 21.2485,
+    "center_lng": 81.6580,
+    "expected_flow_lpm": 80.0,
+    "expected_pressure_psi": 55.0,
+    "impact_category": "RESIDENTIAL",
+    "description": "Dense residential sector subject to morning/evening peak demand variations."
+  },
+  {
+    "id": "ZONE-D",
+    "name": "Zone D — Telibandha Hospital Corridor",
+    "center_lat": 21.2410,
+    "center_lng": 81.6650,
+    "expected_flow_lpm": 110.0,
+    "expected_pressure_psi": 62.0,
+    "impact_category": "CRITICAL_INFRASTRUCTURE",
+    "description": "Primary arterial trunk feeding district hospital, schools, and emergency facilities."
+  },
+  {
+    "id": "ZONE-E",
+    "name": "Zone E — Tatibandh Industrial Feeder",
+    "center_lat": 21.2620,
+    "center_lng": 81.5790,
+    "expected_flow_lpm": 70.0,
+    "expected_pressure_psi": 52.0,
+    "impact_category": "STANDARD",
+    "description": "Peripheral distribution feeder with intermittent telemetry connectivity."
+  }
+]

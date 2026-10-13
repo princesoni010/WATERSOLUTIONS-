@@ -1,0 +1,92 @@
+[
+  {
+    "tracking_reference": "AG-2026-00101",
+    "issue_type": "PIPELINE_LEAK",
+    "description": "Water is continuously leaking from the roadside main pipe near Pandri bus stand gate 2.",
+    "latitude": 21.2569,
+    "longitude": 81.6414,
+    "status": "LINKED",
+    "zone_id": "ZONE-B",
+    "ai_tags": {
+      "possible_leak": true,
+      "issue_type": "pipeline_leak",
+      "water_pooling_visible": true,
+      "visual_severity": "HIGH",
+      "image_quality": "GOOD",
+      "recommended_action": "OPERATOR_REVIEW",
+      "assessment_text": "AI assessment: Possible roadside pipeline leak with visible surface water pooling."
+    }
+  },
+  {
+    "tracking_reference": "AG-2026-00104",
+    "issue_type": "WATER_POOLING",
+    "description": "Large water pooling near bus stop pipeline and school crossing, water pressure in nearby shops is low.",
+    "latitude": 21.2571,
+    "longitude": 81.6416,
+    "status": "LINKED",
+    "zone_id": "ZONE-B",
+    "ai_tags": {
+      "possible_leak": true,
+      "issue_type": "water_pooling",
+      "water_pooling_visible": true,
+      "visual_severity": "MEDIUM",
+      "image_quality": "GOOD",
+      "recommended_action": "OPERATOR_REVIEW",
+      "assessment_text": "AI assessment: Possible underground or joint leak causing roadside water accumulation."
+    }
+  },
+  {
+    "tracking_reference": "AG-2026-00108",
+    "issue_type": "PUBLIC_TAP_LEAK",
+    "description": "Public standpost tap broken near Shankar Nagar community park, steady stream running into drain.",
+    "latitude": 21.2487,
+    "longitude": 81.6582,
+    "status": "UNDER_REVIEW",
+    "zone_id": "ZONE-C",
+    "ai_tags": {
+      "possible_leak": true,
+      "issue_type": "public_tap_leakage",
+      "water_pooling_visible": true,
+      "visual_severity": "MEDIUM",
+      "image_quality": "GOOD",
+      "recommended_action": "OPERATOR_REVIEW",
+      "assessment_text": "AI assessment: Possible public-tap leakage with visible water pooling."
+    }
+  },
+  {
+    "tracking_reference": "AG-2026-00112",
+    "issue_type": "VALVE_JOINT_LEAK",
+    "description": "Minor dampness around chamber cover near Civil Lines Ward 4.",
+    "latitude": 21.2516,
+    "longitude": 81.6298,
+    "status": "SUBMITTED",
+    "zone_id": "ZONE-A",
+    "ai_tags": {
+      "possible_leak": false,
+      "issue_type": "valve_joint_leakage",
+      "water_pooling_visible": false,
+      "visual_severity": "LOW",
+      "image_quality": "GOOD",
+      "recommended_action": "MONITOR",
+      "assessment_text": "AI assessment: Minor surface moisture near valve chamber; field verification required."
+    }
+  },
+  {
+    "tracking_reference": "AG-2026-00119",
+    "issue_type": "PIPELINE_LEAK",
+    "description": "Duplicate report of water pooling near Pandri bus stand main road.",
+    "latitude": 21.2567,
+    "longitude": 81.6411,
+    "status": "LINKED",
+    "zone_id": "ZONE-B",
+    "ai_tags": {
+      "possible_leak": true,
+      "issue_type": "pipeline_leak",
+      "water_pooling_visible": true,
+      "visual_severity": "MEDIUM",
+      "image_quality": "GOOD",
+      "recommended_action": "OPERATOR_REVIEW",
+      "assessment_text": "AI assessment: Possible pipeline leakage with surface pooling."
+    }
+  }
+]

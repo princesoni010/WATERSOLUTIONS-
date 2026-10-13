@@ -1,0 +1,37 @@
+{
+  "ZONE-A": {
+    "sensor_id": "FLOW-ZONE-A-01",
+    "expected_flow_lpm": 90.0,
+    "expected_pressure_psi": 58.0,
+    "normal_range_flow": [86.0, 94.0],
+    "normal_range_pressure": [56.0, 60.0]
+  },
+  "ZONE-B": {
+    "sensor_id": "FLOW-ZONE-B-01",
+    "expected_flow_lpm": 100.0,
+    "expected_pressure_psi": 60.0,
+    "normal_range_flow": [96.0, 104.0],
+    "normal_range_pressure": [58.0, 62.0]
+  },
+  "ZONE-C": {
+    "sensor_id": "FLOW-ZONE-C-01",
+    "expected_flow_lpm": 80.0,
+    "expected_pressure_psi": 55.0,
+    "normal_range_flow": [76.0, 84.0],
+    "normal_range_pressure": [53.0, 57.0]
+  },
+  "ZONE-D": {
+    "sensor_id": "FLOW-ZONE-D-01",
+    "expected_flow_lpm": 110.0,
+    "expected_pressure_psi": 62.0,
+    "normal_range_flow": [105.0, 115.0],
+    "normal_range_pressure": [60.0, 64.0]
+  },
+  "ZONE-E": {
+    "sensor_id": "FLOW-ZONE-E-01",
+    "expected_flow_lpm": 70.0,
+    "expected_pressure_psi": 52.0,
+    "normal_range_flow": [67.0, 73.0],
+    "normal_range_pressure": [50.0, 54.0]
+  }
+}
