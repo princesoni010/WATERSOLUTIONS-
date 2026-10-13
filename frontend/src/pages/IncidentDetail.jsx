@@ -26,8 +26,8 @@ function fmtDateTime(iso) {
 }
 
 const DEMO_LEAK_IMAGES = [
-  'https://images.unsplash.com/photo-1541888946425-d0fbb18f15f9?auto=format&fit=crop&w=800&q=80', // Roadside water pooling & pavement leak
-  'https://images.unsplash.com/photo-1584467735871-8e85353a8413?auto=format&fit=crop&w=800&q=80', // Water pipe joint collar seepage
+  'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80', // Municipal water pipeline valve & main trunk line
+  'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80', // Pipeline joint leak with water escaping collar
 ]
 
 export default function IncidentDetail() {
